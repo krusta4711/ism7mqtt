@@ -21,7 +21,7 @@ public class Ism7SslStream : Stream
         _protocol = new TlsClientProtocol();
     }
 
-    public static X509Certificate2 Certificate => new(Resources.client);
+    public static X509Certificate2 Certificate => X509CertificateLoader.LoadPkcs12(Resources.client, null);
 
     public async Task AuthenticateAsClientAsync(CancellationToken cancellationToken)
     {
@@ -56,17 +56,12 @@ public class Ism7SslStream : Stream
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        if (!MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> array))
-        {
-            throw new NotSupportedException("could not get array from buffer");
-        }
-
         while (true)
         {
             var bytes = _protocol.GetAvailableInputBytes();
             if (bytes > 0)
             {
-                return _protocol.ReadInput(array.Array, array.Offset, array.Count);
+                return _protocol.ReadInput(buffer, offset, count);
             }
 
             var readBuffer = ArrayPool<byte>.Shared.Rent(8192);
@@ -178,6 +173,7 @@ public class Ism7SslStream : Stream
             bytes = await _socket.SendAsync(data, SocketFlags.None, cancellationToken);
             data = data.Slice(bytes);
         }
+        ArrayPool<byte>.Shared.Return(sendBuffer);
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

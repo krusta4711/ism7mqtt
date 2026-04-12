@@ -13,14 +13,17 @@ namespace ism7mqtt
 {
     public class Ism7Config
     {
+        private readonly Ism7Localizer _localizer;
         private readonly IReadOnlyList<DeviceTemplate> _deviceTemplates;
         private readonly IReadOnlyList<ConverterTemplateBase> _converterTemplates;
         private readonly IReadOnlyList<ParameterDescriptor> _parameterTemplates;
         private readonly IDictionary<byte, List<RunningDevice>> _devices;
+        private readonly Dictionary<string, List<InfoRead>> _bundles = new();
         private readonly ConfigRoot _config;
 
-        public Ism7Config(string filename)
+        public Ism7Config(string filename, Ism7Localizer localizer)
         {
+            _localizer = localizer;
             _deviceTemplates = LoadDeviceTemplates();
             _converterTemplates = LoadConverterTemplates();
             _parameterTemplates = LoadParameterTemplates();
@@ -83,14 +86,43 @@ namespace ism7mqtt
             {
                 var device = _deviceTemplates.First(x => x.DTID == configDevice.DeviceTemplateId);
                 var tids = configDevice.Parameter.ToHashSet();
-                devices.Add(new RunningDevice(device.Name, ip, configDevice.ReadBusAddress, configDevice.WriteBusAddress, _parameterTemplates.Where(x => tids.Contains(x.PTID)), _converterTemplates.Where(x => tids.Contains(x.CTID))));
+                devices.Add(new RunningDevice(device.Name, ip, configDevice.ReadBusAddress, configDevice.WriteBusAddress, _parameterTemplates.Where(x => tids.Contains(x.PTID)), _converterTemplates.Where(x => tids.Contains(x.CTID)), _localizer));
             }
         }
 
-        public IEnumerable<InfoRead> GetInfoReadForDevice(string ba)
+        public IEnumerable<(string, List<InfoRead>)> GetBundlesForDevice(string ba)
         {
             var devices = _devices[Converter.FromHex(ba)];
-            return devices.SelectMany(x => x.InfoReads).DistinctBy(x => new { x.InfoNumber, x.ServiceNumber });
+            var bundles = new List<List<InfoRead>>();
+            //https://github.com/zivillian/ism7mqtt/issues/177#issuecomment-3852657064
+            //split into bundles of 20 info reads, but keep all info reads of a parameter in one bundle
+            var parameters = devices.SelectMany(x => x.Parameters)
+                .Where(x => x.InfoReadCount > 0)
+                .OrderByDescending(x => x.InfoReadCount);
+            foreach (var parameter in parameters)
+            {
+                var bundle = bundles.FirstOrDefault(x => x.Count <= 20 - parameter.InfoReadCount);
+                if (bundle is null)
+                {
+                    bundles.Add(parameter.InfoReads.ToList());
+                }
+                else
+                {
+                    bundle.AddRange(parameter.InfoReads);
+                }
+            }
+
+            foreach (var bundle in bundles)
+            {
+                var bundleId = (_bundles.Count + 1).ToString();
+                _bundles.Add(bundleId, bundle);
+                yield return (bundleId, bundle);
+            }
+        }
+
+        public List<InfoRead> GetBundle(string bundleId)
+        {
+            return _bundles[bundleId];
         }
 
         public bool ProcessData(IEnumerable<InfonumberReadResp> data)
@@ -161,7 +193,7 @@ namespace ism7mqtt
         {
             private readonly List<RunningParameter> _parameter;
 
-            public RunningDevice(string name, string ip, string readBusAddress, string writeBusAddress, IEnumerable<ParameterDescriptor> parameter, IEnumerable<ConverterTemplateBase> converter)
+            public RunningDevice(string name, string ip, string readBusAddress, string writeBusAddress, IEnumerable<ParameterDescriptor> parameter, IEnumerable<ConverterTemplateBase> converter, Ism7Localizer localizer)
             {
                 Name = name;
                 IP = ip;
@@ -173,7 +205,7 @@ namespace ism7mqtt
                 foreach (var descriptor in parameter)
                 {
                     var conv = converter.FirstOrDefault(x=>x.CTID == descriptor.PTID);
-                    if (conv != null) _parameter.Add(new RunningParameter(descriptor, conv));
+                    if (conv != null) _parameter.Add(new RunningParameter(descriptor, conv, localizer));
                 }
 
                 EnsureUniqueParameterNames();
@@ -310,11 +342,13 @@ namespace ism7mqtt
         public class RunningParameter
         {
             private readonly ParameterDescriptor _descriptor;
+            private readonly Ism7Localizer _localizer;
             private readonly ConverterTemplateBase _converter;
 
-            public RunningParameter(ParameterDescriptor descriptor, ConverterTemplateBase converter)
+            public RunningParameter(ParameterDescriptor descriptor, ConverterTemplateBase converter, Ism7Localizer localizer)
             {
                 _descriptor = descriptor;
+                _localizer = localizer;
                 _converter = converter.Clone();
             }
 
@@ -327,6 +361,8 @@ namespace ism7mqtt
             public bool IsWritable => _descriptor.IsWritable;
 
             public bool HasValue => _converter.HasValue;
+
+            public int InfoReadCount => _converter.InfoReadCount;
 
             public IEnumerable<InfoRead> InfoReads => _converter.InfoReads;
 
@@ -368,16 +404,21 @@ namespace ism7mqtt
                     if (parts[0] == "text")
                     {
                         var names = listDescriptor.KeyValueList.Split(';');
-                        var name = value;
+                        var candidates = _localizer.Revert(value);
                         bool validName = false;
-                        for (int i = 1; i < names.Length; i += 2)
+                        foreach (var name in candidates)
                         {
-                            if (names[i] == name)
+                            for (int i = 1; i < names.Length; i += 2)
                             {
-                                value = names[i - 1];
-                                validName = true;
-                                break;
+                                if (names[i] == name)
+                                {
+                                    value = names[i - 1];
+                                    validName = true;
+                                    break;
+                                }
                             }
+
+                            if (validName) break;
                         }
                         if (!validName) return Array.Empty<InfoWrite>();
                     }
@@ -419,14 +460,21 @@ namespace ism7mqtt
                             else if (jobject.TryGetPropertyValue("text", out var text))
                             {
                                 var names = listDescriptor.KeyValueList.Split(';');
-                                var name = text.ToString();
-                                for (int i = 1; i < names.Length; i += 2)
+                                var candidates = _localizer.Revert(text.ToString());
+                                bool found = false;
+                                foreach (var name in candidates)
                                 {
-                                    if (names[i] == name)
+                                    for (int i = 1; i < names.Length; i += 2)
                                     {
-                                        value = names[i - 1];
-                                        break;
+                                        if (names[i] == name)
+                                        {
+                                            value = names[i - 1];
+                                            found = true;
+                                            break;
+                                        }
                                     }
+
+                                    if (found) break;
                                 }
                             }
                         }
@@ -449,7 +497,7 @@ namespace ism7mqtt
                             value = new JsonObject
                             {
                                 ["value"] = value,
-                                ["text"] = text
+                                ["text"] = _localizer[text]
                             };
                         }
                     }
@@ -492,7 +540,7 @@ namespace ism7mqtt
                             yield return value
                                 .Clone()
                                 .AddSuffix("text")
-                                .SetContent(text);
+                                .SetContent(_localizer[text]);
                         }
                         else
                         {

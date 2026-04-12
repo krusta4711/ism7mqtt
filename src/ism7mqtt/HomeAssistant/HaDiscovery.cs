@@ -20,16 +20,18 @@ namespace ism7mqtt.HomeAssistant
         private readonly Ism7Config _config;
         private readonly IMqttClient _mqttClient;
         private readonly string _discoveryId;
+        private readonly Ism7Localizer _localizer;
 
         public bool EnableDebug { get; set; }
 
         public MqttQualityOfServiceLevel QosLevel { get; set; }
 
-        public HaDiscovery(Ism7Config config, IMqttClient mqttClient, string discoveryId)
+        public HaDiscovery(Ism7Config config, IMqttClient mqttClient, string discoveryId, Ism7Localizer localizer)
         {
             _config = config;
             _mqttClient = mqttClient;
             _discoveryId = discoveryId;
+            _localizer = localizer;
         }
 
         public async Task PublishDiscoveryInfo(CancellationToken cancellationToken)
@@ -53,7 +55,7 @@ namespace ism7mqtt.HomeAssistant
 
         public IEnumerable<JsonMessage> GetDiscoveryInfo()
         {
-            return _config.Devices.SelectMany(x => GetDiscoveryInfo(x));
+            return _config.Devices.SelectMany(GetDiscoveryInfo);
         }
 
         private string LaunderHomeassistantId(string id) {
@@ -229,13 +231,45 @@ namespace ism7mqtt.HomeAssistant
                     }
                     if (numeric.UnitName != null)
                     {
-                        yield return ("unit_of_measurement", numeric.UnitName);
+                        yield return ("unit_of_measurement", _localizer[numeric.UnitName]);
                         if (numeric.UnitName == "°C")
                         {
                             yield return ("icon", "mdi:thermometer");
                             yield return ("state_class", "measurement");
                         }
                         else if (numeric.UnitName == "%")
+                        {
+                            yield return ("state_class", "measurement");
+                        }
+                        else if (numeric.UnitName == "kWh")
+                        {
+                            yield return ("state_class", "total_increasing");
+                            yield return ("device_class", "energy");
+                        }
+                        else if (numeric.UnitName == "W")
+                        {
+                            yield return ("state_class", "measurement");
+                            yield return ("device_class", "power");
+                        }
+                        else if (numeric.UnitName == "kW")
+                        {
+                            yield return ("state_class", "measurement");
+                            yield return ("device_class", "power");
+                        }
+                        else if (numeric.UnitName == "Hz")
+                        {
+                            yield return ("state_class", "measurement");
+                            yield return ("device_class", "frequency");
+                        }
+                        else if (numeric.UnitName == "l/min")
+                        {
+                            yield return ("state_class", "measurement");
+                        }
+                        else if (numeric.UnitName == "L/min")
+                        {
+                            yield return ("state_class", "measurement");
+                        }
+                        else if (numeric.UnitName == "U/min")
                         {
                             yield return ("state_class", "measurement");
                         }
@@ -266,7 +300,7 @@ namespace ism7mqtt.HomeAssistant
                         var options = new JsonArray();
                         foreach (var value in list.Options)
                         {
-                            options.Add((JsonNode)value.Value);
+                            options.Add((JsonNode)_localizer[value.Value]);
                         }
                         yield return ("options", options);
                         yield return ("device_class", "enum");

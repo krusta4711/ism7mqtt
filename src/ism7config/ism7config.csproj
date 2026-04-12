@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <TrimMode>partial</TrimMode>
   </PropertyGroup>
@@ -10,16 +10,17 @@
   <ItemGroup>
     <Content Include="..\ism7mqtt\Resources\ConverterTemplates.xml" Link="Resources\convertertemplates.xml" />
     <Content Include="..\ism7mqtt\Resources\DeviceTemplates.xml" Link="Resources\devicetemplates.xml" />
+    <Content Include="..\ism7mqtt\Resources\Dictionary.xml" Link="Resources\dictionary.xml" />
     <Content Include="..\ism7mqtt\Resources\ParameterTemplates.xml" Link="Resources\parametertemplates.xml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
     <PackageReference Include="Mono.Options" Version="6.12.0.148" />
     <PackageReference Include="NLog" Version="5.3.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
-    <PackageReference Include="smartset.net" Version="4.0.7" />
+    <PackageReference Include="smartset.net" Version="4.4.5" />
   </ItemGroup>
 
   <ItemGroup>

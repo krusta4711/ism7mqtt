@@ -121130,30 +121130,6 @@
       <POR>Tenha em atenção: O programa de tempo só está disponível a partir da versão 1.30 do software do BM-2. Pode transferir uma atualização a partir da página inicial da Wolf.</POR>
     </TextTableEntry>
     <TextTableEntry>
-      <DEU>Freigabe für den Fachhandwerksbetrieb</DEU>
-      <CHN>为专业技术公司启用</CHN>
-      <GRC>Έγκριση για το εξειδικευμένο συνεργείο</GRC>
-      <EST>Luba hooldusfirma kasutamiseks</EST>
-      <HRV>Odobrenje za stručnu radionicu</HRV>
-      <LVA>Aktivizācija specializētam amatniecības uzņēmumam</LVA>
-      <LTU>Leidimas specializuotai prekybos įmonei</LTU>
-      <ROU>Autorizație pentru întreprinderea autorizată</ROU>
-      <ITA>Abilitazione per il tecnico specializzato</ITA>
-      <ESP>Habilitación para establecimiento profesional especializado</ESP>
-      <FRA>Autorisation pour professionnel agréé</FRA>
-      <POL>Zatwierdzenie autoryzowanego serwisu</POL>
-      <CZE>Oprávnění pro specializovanou firmu</CZE>
-      <SVK>Povolenie pre odbornú servisnú prevádzku</SVK>
-      <RUS>Разрешение для специализированной фирмы</RUS>
-      <DNK>Frigivelse til håndværksvirksomheder</DNK>
-      <HUN>Engedélyezés szakszerviz számára</HUN>
-      <GBR>Activation for your installer</GBR>
-      <TUR>Uzman atölye işletmesi için onay</TUR>
-      <NLD>Vrijgave voor het installateurbedrijf</NLD>
-      <BUL>Одобрение за специализирания сервиз</BUL>
-      <POR>Autorização para a empresa especializada</POR>
-    </TextTableEntry>
-    <TextTableEntry>
       <DEU>Fachhandwerksbetrieb</DEU>
       <CHN>专业技术公司</CHN>
       <GRC>Εξειδικευμένο συνεργείο</GRC>
@@ -129912,6 +129888,30 @@
       <NLD>December</NLD>
       <BUL>декември</BUL>
       <POR>Dezembro</POR>
+    </TextTableEntry>
+    <TextTableEntry>
+      <DEU>Das Passwort des Schnittstellenmoduls der ausgewählten Anlage wurde geändert. Aus Sicherheitsgründen ist der Zugriff auf die Anlage gesperrt.</DEU>
+      <CHN>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</CHN>
+      <GRC>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</GRC>
+      <EST>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</EST>
+      <HRV>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</HRV>
+      <LVA>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</LVA>
+      <LTU>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</LTU>
+      <ROU>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</ROU>
+      <ITA>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</ITA>
+      <ESP>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</ESP>
+      <FRA>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</FRA>
+      <POL>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</POL>
+      <CZE>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</CZE>
+      <SVK>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</SVK>
+      <RUS>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</RUS>
+      <DNK>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</DNK>
+      <HUN>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</HUN>
+      <GBR>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</GBR>
+      <TUR>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</TUR>
+      <NLD>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</NLD>
+      <BUL>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</BUL>
+      <POR>The password of the interface module of the selected system has been changed. For security reasons, access to the system is blocked.</POR>
     </TextTableEntry>
   </TableEntries>
 </TextTable>

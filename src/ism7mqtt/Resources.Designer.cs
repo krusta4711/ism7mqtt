@@ -19,7 +19,7 @@ namespace ism7mqtt {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -95,6 +95,34 @@ namespace ism7mqtt {
         internal static string DeviceTemplates {
             get {
                 return ResourceManager.GetString("DeviceTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;TextTable xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; Version=&quot;0&quot;&gt;
+        ///  &lt;TableEntries&gt;
+        ///    &lt;TextTableEntry&gt;
+        ///      &lt;DEU&gt;%&lt;/DEU&gt;
+        ///      &lt;CHN&gt;%&lt;/CHN&gt;
+        ///      &lt;GRC&gt;%&lt;/GRC&gt;
+        ///      &lt;EST&gt;%&lt;/EST&gt;
+        ///      &lt;HRV&gt;%&lt;/HRV&gt;
+        ///      &lt;LVA&gt;%&lt;/LVA&gt;
+        ///      &lt;LTU&gt;%&lt;/LTU&gt;
+        ///      &lt;ROU&gt;%&lt;/ROU&gt;
+        ///      &lt;ITA&gt;%&lt;/ITA&gt;
+        ///      &lt;ESP&gt;%&lt;/ESP&gt;
+        ///      &lt;FRA&gt;%&lt;/FRA&gt;
+        ///      &lt;POL&gt;%&lt;/POL&gt;
+        ///      &lt;CZE&gt;%&lt;/CZE&gt;
+        ///      &lt;SVK&gt;%&lt;/SVK&gt;
+        ///      &lt;RUS&gt;%&lt;/RUS&gt;
+        ///      &lt;D [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Dictionary {
+            get {
+                return ResourceManager.GetString("Dictionary", resourceCulture);
             }
         }
         

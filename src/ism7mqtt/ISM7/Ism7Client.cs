@@ -37,11 +37,11 @@ namespace ism7mqtt
 
         public Func<Ism7Config, CancellationToken, Task> OnInitializationFinishedAsync { get; set; }
 
-        public Ism7Client(Func<Ism7Config, CancellationToken, Task> messageHandler, string parameterPath, string host)
+        public Ism7Client(Func<Ism7Config, CancellationToken, Task> messageHandler, string parameterPath, string host, Ism7Localizer localizer)
         {
             _messageHandler = messageHandler;
             _host = host;
-            _config = new Ism7Config(parameterPath);
+            _config = new Ism7Config(parameterPath, localizer);
             _pipe = new Pipe();
         }
 
@@ -164,9 +164,29 @@ namespace ism7mqtt
             try
             {
                 var header = new byte[6];
+                var tasks = new List<Task>();
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var result = await source.ReadAsync(cancellationToken);
+                    var readValueTask = source.ReadAsync(cancellationToken);
+                    ReadResult result;
+                    if (readValueTask.IsCompleted)
+                    {
+                        result = await readValueTask;
+                    }
+                    else
+                    {
+                        var readTask = readValueTask.AsTask();
+                        tasks.Add(readTask);
+                        while (true)
+                        {
+                            var done = await Task.WhenAny(tasks);
+                            tasks.Remove(done);
+                            if (done == readTask) break;
+                        }
+
+                        result = await readTask;
+                    }
+
                     var buffer = result.Buffer;
                     while (buffer.Length >= 6)
                     {
@@ -188,7 +208,7 @@ namespace ism7mqtt
                         else
                         {
                             var response = Deserialize(type, new ReadOnlySequenceStream(xmlBuffer));
-                            await _dispatcher.DispatchAsync(response, cancellationToken);
+                            tasks.Add(_dispatcher.DispatchAsync(response, cancellationToken));
                         }
                         buffer = buffer.Slice(xmlBuffer.End);
                         
@@ -216,10 +236,10 @@ namespace ism7mqtt
             return s.ToString();
         }
 
-        private async Task SubscribeAsync(string busAddress, CancellationToken cancellationToken)
+        private async Task SubscribeAsync(string busAddress, string bundleId, CancellationToken cancellationToken)
         {
-            var infoReads = _config.GetInfoReadForDevice(busAddress).ToList();
-            var bundleId = NextBundleId();
+            var infoReads = _config.GetBundle(bundleId);
+            bundleId = NextBundleId();
             _dispatcher.Subscribe(x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp) x).BundleId == bundleId, OnPushResponseAsync);
             foreach (var infoRead in infoReads)
             {
@@ -258,31 +278,36 @@ namespace ism7mqtt
 
         private async Task LoadInitialValuesAsync(CancellationToken cancellationToken)
         {
+            var semaphore = new SemaphoreSlim(1, 1);
             foreach (var busAddress in _config.AddAllDevices(_host))
             {
-                var infoReads = _config.GetInfoReadForDevice(busAddress).ToList();
-                var bundleId = NextBundleId();
-                _dispatcher.SubscribeOnce(
-                    x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp) x).BundleId == bundleId,
-                    OnInitialValuesAsync);
-                if (infoReads.Count == 0)
+                var bundles = _config.GetBundlesForDevice(busAddress);
+                foreach (var (bundleId, infoReads) in bundles)
                 {
-                    //device without any valid parameter
-                    continue;
+                    NextBundleId();
+                    _dispatcher.SubscribeOnce(
+                        x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp)x).BundleId == bundleId,
+                        (r, c) =>
+                        {
+                            semaphore.Release();
+                            return OnInitialValuesAsync(r, c);
+                        });
+                    foreach (var infoRead in infoReads)
+                    {
+                        infoRead.BusAddress = busAddress;
+                        infoRead.Seq = NextSequenceId();
+                    }
+
+                    await semaphore.WaitAsync(cancellationToken);
+                    await SendAsync(new TelegramBundleReq
+                    {
+                        AbortOnError = false,
+                        BundleId = bundleId,
+                        GatewayId = "1",
+                        TelegramBundleType = TelegramBundleType.pull,
+                        InfoReadTelegrams = infoReads
+                    }, cancellationToken);
                 }
-                foreach (var infoRead in infoReads)
-                {
-                    infoRead.BusAddress = busAddress;
-                    infoRead.Seq = NextSequenceId();
-                }
-                await SendAsync(new TelegramBundleReq
-                {
-                    AbortOnError = false,
-                    BundleId = bundleId,
-                    GatewayId = "1",
-                    TelegramBundleType = TelegramBundleType.pull,
-                    InfoReadTelegrams = infoReads
-                }, cancellationToken);
             }
             if (OnInitializationFinishedAsync is not null)
             {
@@ -304,7 +329,7 @@ namespace ism7mqtt
                 {
                     await _messageHandler(_config, cancellationToken);
                     var busAddress = resp.Telegrams.Select(x => x.BusAddress).First();
-                    await SubscribeAsync(busAddress, cancellationToken);
+                    await SubscribeAsync(busAddress, resp.BundleId, cancellationToken);
                 }
             }
         }
