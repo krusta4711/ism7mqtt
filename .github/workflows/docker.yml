@@ -2,7 +2,7 @@ name: Docker
 
 on:
   push:
-    branches: [ master ]
+    branches: [ krusta4711_version_mminks_PR_195 ]
     tags:
       - krusta/ism7mqtt_fork:v0.0.19_plus_mminks_PR_195_commit_d7b408f
 
