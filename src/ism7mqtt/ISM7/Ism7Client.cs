@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -27,10 +26,8 @@ namespace ism7mqtt
         private readonly Ism7Config _config;
         private readonly Pipe _pipe;
         private readonly ResponseDispatcher _dispatcher = new ResponseDispatcher();
-        private int _nextBundleId = 0;
         private short _lastKeepAlive = 0;
         private Stream _sslStream;
-        private int _nextSequenceId = 1;
 
         public int Interval { get; set; }
 
@@ -397,7 +394,7 @@ namespace ism7mqtt
 
         private string NextBundleId()
         {
-            var id = IdGenerator.GetNextBundleId();
+            var id = IdGenerator.GetNextBundleId("Client (main)");
             return id.ToString();
         }
 
