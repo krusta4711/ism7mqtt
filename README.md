@@ -37,6 +37,7 @@ Possible environmental variables:
 * ISM7_INTERVAL
 * ISM7_HOMEASSISTANT_ID
 * ISM7_LANGUAGE
+* ISM7_DEBUG
 
 ### HomeAssistant
 

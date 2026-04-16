@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using ism7mqtt.ISM7;
 using ism7mqtt.ISM7.Protocol;
 using ism7ssl;
 
@@ -396,13 +397,13 @@ namespace ism7mqtt
 
         private string NextBundleId()
         {
-            var id = Interlocked.Increment(ref _nextBundleId);
+            var id = IdGenerator.GetNextBundleId();
             return id.ToString();
         }
 
         private string NextSequenceId()
         {
-            var id = Interlocked.Increment(ref _nextSequenceId);
+            var id = IdGenerator.GetNextSequenceId();
             return $"A;{id}";
         }
 

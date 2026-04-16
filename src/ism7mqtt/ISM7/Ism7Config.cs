@@ -8,11 +8,14 @@ using System.Xml.Serialization;
 using ism7mqtt.ISM7.Config;
 using ism7mqtt.ISM7.Protocol;
 using ism7mqtt.ISM7.Xml;
+using System.Threading;
+using ism7mqtt.ISM7;
 
 namespace ism7mqtt
 {
     public class Ism7Config
     {
+        public const int NextBundleId = 0;
         private readonly Ism7Localizer _localizer;
         private readonly IReadOnlyList<DeviceTemplate> _deviceTemplates;
         private readonly IReadOnlyList<ConverterTemplateBase> _converterTemplates;
@@ -114,7 +117,7 @@ namespace ism7mqtt
 
             foreach (var bundle in bundles)
             {
-                var bundleId = (_bundles.Count + 1).ToString();
+                var bundleId = IdGenerator.GetNextBundleId().ToString();
                 _bundles.Add(bundleId, bundle);
                 yield return (bundleId, bundle);
             }
