@@ -180,7 +180,11 @@ namespace ism7mqtt
                         while (true)
                         {
                             var done = await Task.WhenAny(tasks);
-                            tasks.Remove(done);
+                            tasks.Remove(done);                          
+                            if (done.IsFaulted)
+                            {
+                                Console.WriteLine(done.Exception?.InnerException ?? done.Exception);
+                            }
                             if (done == readTask) break;
                         }
 
@@ -287,11 +291,19 @@ namespace ism7mqtt
                     NextBundleId();
                     _dispatcher.SubscribeOnce(
                         x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp)x).BundleId == bundleId,
-                        (r, c) =>
+                        async (r, c) =>
                         {
-                            semaphore.Release();
-                            return OnInitialValuesAsync(r, c);
-                        });
+                            try
+                            {
+                                await OnInitialValuesAsync(r, c);
+                            }
+                            finally
+                            {
+                                semaphore.Release();  // always release, also on exception
+                            }
+                        }
+                    );
+                    
                     foreach (var infoRead in infoReads)
                     {
                         infoRead.BusAddress = busAddress;
