@@ -107,7 +107,7 @@ namespace ism7mqtt
             var request = new TelegramBundleReq
             {
                 AbortOnError = true,
-                BundleId = NextBundleId(),
+                BundleId = NextBundleId("write"),
                 GatewayId = "1",
                 TelegramBundleType = TelegramBundleType.write,
                 InfoWriteTelegrams = writeRequests
@@ -241,7 +241,7 @@ namespace ism7mqtt
         private async Task SubscribeAsync(string busAddress, string bundleId, CancellationToken cancellationToken)
         {
             var infoReads = _config.GetBundle(bundleId);
-            bundleId = NextBundleId();
+            bundleId = NextBundleId("push");
             _dispatcher.Subscribe(x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp) x).BundleId == bundleId, OnPushResponseAsync);
             foreach (var infoRead in infoReads)
             {
@@ -286,7 +286,7 @@ namespace ism7mqtt
                 var bundles = _config.GetBundlesForDevice(busAddress);
                 foreach (var (bundleId, infoReads) in bundles)
                 {
-                    NextBundleId();
+                    NextBundleId("not used LoadInitialValuesAsync");
                     _dispatcher.SubscribeOnce(
                         x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp)x).BundleId == bundleId,
                         async (r, c) =>
@@ -392,9 +392,9 @@ namespace ism7mqtt
             return _sslStream.WriteAsync(buffer, cancellationToken);
         }
 
-        private string NextBundleId()
+        private string NextBundleId(string source)
         {
-            var id = IdGenerator.GetNextBundleId("Client (main)");
+            var id = IdGenerator.GetNextBundleId("Client (main " + source + ")");
             return id.ToString();
         }
 

@@ -116,6 +116,7 @@ namespace ism7mqtt
             foreach (var bundle in bundles)
             {
                 var bundleId = IdGenerator.GetNextBundleId("Config (sub)").ToString();
+                Console.WriteLine($"VKVK ADD bundle id {bundleId} for bus address {ba}");
                 _bundles.Add(bundleId, bundle);
                 yield return (bundleId, bundle);
             }
@@ -123,6 +124,7 @@ namespace ism7mqtt
 
         public List<InfoRead> GetBundle(string bundleId)
         {
+            Console.WriteLine($"VKVK GET bundle id {bundleId}");
             return _bundles[bundleId];
         }
 

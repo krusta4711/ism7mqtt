@@ -13,7 +13,7 @@ namespace ism7mqtt.ISM7
 
         public static int GetNextBundleId(string source) {
             var newId = Interlocked.Increment(ref _nextBundleId);
-            Console.WriteLine($"Generated new bundle id: {newId} for source: {source}");
+            Console.WriteLine($"VKVK Generated new bundle id: {newId} for source: {source}");
 
             return newId;
         }
