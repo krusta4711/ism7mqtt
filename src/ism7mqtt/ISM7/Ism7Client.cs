@@ -286,7 +286,6 @@ namespace ism7mqtt
                 var bundles = _config.GetBundlesForDevice(busAddress);
                 foreach (var (bundleId, infoReads) in bundles)
                 {
-                    //NextBundleId("not used LoadInitialValuesAsync");
                     _dispatcher.SubscribeOnce(
                         x => x.MessageType == PayloadType.TgrBundleResp && ((TelegramBundleResp)x).BundleId == bundleId,
                         async (r, c) =>
