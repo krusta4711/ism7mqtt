@@ -296,7 +296,7 @@ namespace ism7mqtt
                             }
                             finally
                             {
-                                semaphore.Release();  // always release, also on exception
+                                semaphore.Release();
                             }
                         }
                     );
@@ -391,13 +391,12 @@ namespace ism7mqtt
             return _sslStream.WriteAsync(buffer, cancellationToken);
         }
 
-        private string NextBundleId(string source)
+        private static string NextBundleId(string source)
         {
-            var id = IdGenerator.GetNextBundleId("Client (main " + source + ")");
-            return id.ToString();
+            return IdGenerator.GetNextBundleIdString();
         }
 
-        private string NextSequenceId()
+        private static string NextSequenceId()
         {
             var id = IdGenerator.GetNextSequenceId();
             return $"A;{id}";
