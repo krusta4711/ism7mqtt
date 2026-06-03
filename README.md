@@ -34,6 +34,10 @@ Possible environmental variables:
 * ISM7_PASSWORD
 * ISM7_DISABLEJSON
 * ISM7_SEPARATE
+* ISM7_INTERVAL
+* ISM7_HOMEASSISTANT_ID
+* ISM7_LANGUAGE
+* ISM7_DEBUG
 
 ### HomeAssistant
 
